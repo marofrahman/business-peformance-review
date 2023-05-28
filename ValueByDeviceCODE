@@ -1,0 +1,24 @@
+-- Construct temp. table holding booking values per device type
+
+WITH Values2 AS 
+(
+  SELECT Mobile_Indicator_Name Device, SUM(Net_Gross_Booking_Value_USD) Total_Booking_Value FROM `prism_test.Testt` GROUP BY 1
+),
+
+-- Temp. table holding visits per device type 
+
+Visits2 AS 
+(
+  SELECT Mobile_Indicator_Name Device, SUM(Visits) Total_Visits FROM `prism_test.Testt2` GROUP BY 1
+),
+
+-- Combine above 
+
+FULLTABLE2 AS 
+(
+  SELECT Values2.Device, Values2.Total_Booking_Value, Visits2.Total_Visits FROM Values2 JOIN Visits2 ON Values2.Device = Visits2.Device
+)
+
+-- Display device type, total booking, total viaits & average value each visit gets
+
+SELECT Device, Total_Booking_Value, Total_Visits, Total_Booking_Value / Total_Visits AVG_Value_Per_Visit FROM FULLTABLE2;
