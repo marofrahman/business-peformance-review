@@ -8,12 +8,14 @@ Within each sector, a deep *analytical* dive was performed to better understand 
 * Looking at AOV, UPT and churn rates to determine purchasing patterns as well as general consumer behaviour
 
 **2) Marketing**
-* Identifying the most effective marketing channels via revenues and opt-in percentages driving traffic and conversions
+* Determining the most effective marketing channels via revenues and opt-in percentages driving traffic and conversions
 
 **3) Product**
 * Analysis on the most proftable categories as well as quality control via return rates over time
 
 **4) Web**
-* Test4
+* Identifying a how a typical consumer journey throught the website operates by lookinh at conversion rates between each stage / funnel
 
-Finish
+### Deliverables: ###
+* Presenation
+  * A comprehensive [business review](https://docs.google.com/presentation/d/1Pb_uRGaiaFlmVPLAQ_H12K1O4HZNZhTr69No3yBoZ0A/edit#slide=id.p) was delivered to members of the board on the peformance of their company by looking at its key focus areas
