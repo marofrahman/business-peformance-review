@@ -1,0 +1,55 @@
+WITH temp AS
+ (SELECT
+ EXTRACT(YEAR FROM funnels.date) AS Year,
+ sess.traffic_source,
+ COUNT(DISTINCT funnels.session_id) AS ViewItem
+ FROM `prism-2023-c1.Prism_Main.funnelevents` AS funnels
+ JOIN `prism-2023-c1.Prism_Main.sessions` AS sess
+ ON funnels.session_id = sess.session_id
+ WHERE funnels.event_name = 'view_item'
+ GROUP BY 1,2
+),
+-- Second table 'temp2' is used to find out the number of Distinct sessions where event name is Purchase
+temp2 AS
+ (SELECT
+ EXTRACT(YEAR FROM funnels.date) AS Year,
+ sess.traffic_source,
+ COUNT(DISTINCT funnels.session_id) AS Transact
+ FROM `prism-2023-c1.Prism_Main.funnelevents` AS funnels
+ JOIN `prism-2023-c1.Prism_Main.sessions` AS sess
+ ON funnels.session_id = sess.session_id
+ WHERE event_name = 'purchase'
+ GROUP BY 1,2
+),
+-- Third table 'temp3' is used to find out the number of Distinct sessions where event name is Add to Cart
+temp3 AS
+ (SELECT
+ EXTRACT(YEAR FROM funnels.date) AS Year,
+ sess.traffic_source,
+ COUNT(DISTINCT funnels.session_id) AS AddToCart
+ FROM `prism-2023-c1.Prism_Main.funnelevents` AS funnels
+ JOIN `prism-2023-c1.Prism_Main.sessions` AS sess
+ ON funnels.session_id = sess.session_id
+ WHERE event_name = 'add_to_cart'
+ GROUP BY 1,2
+),
+-- Fourth table 'temp4' is used to find out the number of Distinct sessions for Total visits to the website
+-- No join needed here since all information is taken from sessions table
+temp4 AS
+ (SELECT
+ EXTRACT(YEAR FROM date) AS Year,
+ traffic_source,
+ COUNT(DISTINCT session_id) AS TotalVisits
+ FROM `prism-2023-c1.Prism_Main.sessions`
+ GROUP BY 1,2
+)
+-- Joining all 4 tables together to get the 4 columns
+SELECT temp.*, temp2.Transact, temp3.AddToCart, temp4.TotalVisits
+FROM temp
+JOIN temp2
+  ON temp.Year = temp2.Year AND temp.traffic_source = temp2.traffic_source
+JOIN temp3
+ ON temp.Year = temp3.Year AND temp.traffic_source = temp3.traffic_source
+JOIN temp4
+ ON temp.Year = temp4.Year AND temp.traffic_source = temp4.traffic_source
+ORDER BY Year;
