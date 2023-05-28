@@ -1,0 +1,17 @@
+WITH joined as
+(
+SELECT items.date Days, items.transaction_id Transaction, items.item_quantity Items, returns.return_quantity R,
+  products.item_main_category Category
+FROM `prism-2023-c1.Prism_Main.transactionsanditems` items
+LEFT JOIN prism-2023-c1.Prism_Main.product_returns returns
+ON items.transaction_id = returns.transaction_id AND items.item_id = returns.item_id
+LEFT JOIN prism-2023-c1.Prism_Main.productattributes products
+ON  items.item_id = products.item_id
+)
+
+SELECT
+  EXTRACT(YEAR from Days) Year,
+  Category,
+  SUM(R) Returns, SUM(Items) ItemsSold,
+  ROUND(SUM(R) / SUM(Items),2) Return_Rate
+from joined GROUP BY 1,2 ORDER BY 1 ASC
