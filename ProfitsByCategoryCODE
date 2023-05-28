@@ -1,0 +1,75 @@
+# Join product_costs so we can work out the cost to prism by transaction_id
+WITH with_costs AS (
+SELECT 
+      ti.*, 
+      pc.cost_of_item 
+FROM `Prism_Main.transactionsanditems` AS ti
+JOIN `Prism_Main.product_costs` AS pc
+  ON ti.item_id = pc.item_id)
+,
+# join with returns
+with_returns AS ( 
+SELECT 
+      wc.*,
+      COALESCE(pr.return_quantity, 0) AS return_quantity,
+      pr.return_status
+FROM with_costs AS wc
+LEFT JOIN `Prism_Main.product_returns` AS pr
+  ON wc.transaction_id = pr.transaction_id
+  AND wc.item_id = pr.item_id)
+,
+#Adding Item detatils to products
+full_details as (
+  select wr.*,
+  pa.item_name,
+  pa.item_brand,
+  pa.item_main_category,
+  pa.item_sub_category
+  from with_returns as wr
+  left join `Prism_Main.productattributes` as pa
+  on wr.item_id = pa.item_id
+),
+# quantity after returns (exchanges left the same)
+quantities_after_returns AS (
+SELECT
+      *,
+      CASE 
+        WHEN return_status = 'Refund' THEN item_quantity - return_quantity 
+        ELSE item_quantity
+        END AS quantity_after_return,
+      CASE 
+        WHEN return_status = 'Refund' THEN return_quantity * item_price
+        ELSE 0
+        END AS refund_amount
+FROM full_details)
+,
+# calculating refund amount and quantities/prices/costs before and after returns by item
+by_item_calcs AS (
+SELECT 
+      transaction_id,
+      date,
+      item_id,
+      item_name,
+      item_brand,
+      item_main_category,
+      item_price,
+      cost_of_item,
+      item_quantity,
+      return_quantity,
+      return_status,
+      refund_amount,
+      quantity_after_return,
+      item_price * item_quantity AS price_before_returns,
+      item_price * quantity_after_return AS price_after_returns,
+      cost_of_item * item_quantity AS cost_before_return,
+      cost_of_item * quantity_after_return AS cost_after_returns 
+FROM quantities_after_returns)
+
+
+SELECT
+      EXTRACT(YEAR FROM date) as Year,
+      item_main_category Category,
+      ROUND(((SUM(price_after_returns) - SUM(cost_after_returns))),2) as Profit
+FROM by_item_calcs
+group by 1, 2
+order by 1, 3 desc
