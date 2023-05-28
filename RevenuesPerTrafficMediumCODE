@@ -1,0 +1,24 @@
+with joined AS
+(
+select
+
+      *
+
+from
+  `prism-2023-c1.Prism_Main.transactions` t
+join
+  `prism-2023-c1.Prism_Main.sessions` s
+
+          ON t.session_id = s.session_id 
+          
+where t.user_crm_id IS NOT NULL
+)
+
+-- Count of the rows
+--SELECT count(*) from joined
+
+-- 1) display revenues by traffic sources
+--SELECT traffic_source, ROUND(sum(transaction_revenue),2) Rev_Total from joined GROUP BY 1 ORDER BY 2 DESC
+
+-- 2) display revenues by traffic mediums (high vs low cost marketing channels)
+SELECT traffic_medium, ROUND(sum(transaction_revenue),2) Rev_Total from joined GROUP BY 1 ORDER BY 2 DESC
