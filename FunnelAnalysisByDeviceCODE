@@ -1,0 +1,48 @@
+WITH temp AS
+ (SELECT
+ EXTRACT(YEAR FROM date) AS Year,
+ device_category,
+ COUNT(DISTINCT session_id) AS ViewItem
+ FROM `prism-2023-c1.Prism_Main.funnelevents`
+ WHERE event_name = 'view_item'
+ GROUP BY 1,2
+),
+-- The second table 'temp2' is used to find out the number of Distinct sessions where event name is Purchase
+temp2 AS
+ (SELECT
+ EXTRACT(YEAR FROM date) AS Year,
+ device_category,
+ COUNT(DISTINCT session_id) AS Transact
+ FROM `prism-2023-c1.Prism_Main.funnelevents`
+ WHERE event_name = 'purchase'
+ GROUP BY 1,2
+),
+-- The third table 'temp3' is used to find out the number of Distinct sessions where event name is Add to Cart
+temp3 AS
+ (SELECT
+ EXTRACT(YEAR FROM date) AS Year,
+ device_category,
+ COUNT(DISTINCT session_id) AS AddToCart
+ FROM `prism-2023-c1.Prism_Main.funnelevents`
+ WHERE event_name = 'add_to_cart'
+ GROUP BY 1,2
+),
+-- The fourth table 'temp4' is used to find out the number of Distinct sessions of Total visits to the website
+temp4 AS
+ (SELECT
+ EXTRACT(YEAR FROM date) AS Year,
+ device_category,
+ COUNT(DISTINCT session_id) AS TotalVisits
+ FROM `prism-2023-c1.Prism_Main.sessions`
+ GROUP BY 1,2
+)
+-- Joining the 4 temporary tables together
+SELECT temp.*, temp2.Transact, temp3.AddToCart, temp4.TotalVisits
+FROM temp
+JOIN temp2
+  ON temp.Year = temp2.Year AND temp.device_category = temp2.device_category
+JOIN temp3
+  ON temp.Year = temp3.Year AND temp.device_category = temp3.device_category
+JOIN temp4
+  ON temp.Year = temp4.Year AND temp.device_category = temp4.device_category
+ORDER BY Year;
